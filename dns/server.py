@@ -13,9 +13,12 @@ from threading import Thread
 class RequestHandler(Thread):
     """ A handler for requests to the DNS server """
 
-    def __init__(self):
+    def __init__(self, socket, request, addr):
         """ Initialize the handler thread """
         super().__init__()
+        self.socket = socket
+        self.request = request
+        self.addr = addr
         self.daemon = True
         
     def run(self):
@@ -38,16 +41,16 @@ class Server(object):
         self.caching = caching
         self.ttl = ttl
         self.port = port
-        # TODO: create socket
+        self.socket = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind (('',self.port))
 
     def serve(self):
         """ Start serving request """
-        # TODO: start listening
         while not self.done:
-            # TODO: receive request and open handler
-            pass
+            request, addr = sock.recvfrom(1024)
+            handler = RequestHandler (self.socket, request, addr)
 
     def shutdown(self):
         """ Shutdown the server """
         self.done = True
-        # TODO: shutdown socket
+        self.socket.close ()
