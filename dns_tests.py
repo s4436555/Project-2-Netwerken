@@ -1,4 +1,9 @@
 #!/usr/bin/env python2
+import unittest
+import socket
+import sys
+
+import dns.resolver
 
 """ Tests for your DNS resolver and server """
 
@@ -6,7 +11,29 @@ portnr = 5353
 server = "localhost"
 
 class TestResolver(unittest.TestCase):
-    pass
+    """Test cases for GET requests"""
+
+    def setUp(self):
+        """Prepare for testing"""
+
+
+    def tearDown(self):
+        """Clean up after testing"""
+
+
+    def test_not_empty_valid(self):
+        """..."""
+        hostname = "www.google.nl."
+        resolver = dns.resolver.Resolver(False, 64)
+        found_host = resolver.gethostbyname(hostname)
+        self.assertNotEqual([], found_host[2])
+
+    def test_empty_valid(self):
+        """..."""
+        hostname = "www.google.nl.maffia."
+        resolver = dns.resolver.Resolver(False, 64)
+        found_host = resolver.gethostbyname(hostname)
+        self.assertEqual([], found_host[2])
 
 
 class TestResolverCache(unittest.TestCase):
