@@ -70,7 +70,7 @@ class RecordCache(object):
             type_ (Type): type
             class_ (Class): class
         """
-        pass
+        return [record for record in self.records if record.name == dname and record.type_ == type_ and record.class_ == class_ and record.ttl > time.time()]
     
     def add_record(self, record):
         """ Add a new Record to the cache
@@ -78,7 +78,13 @@ class RecordCache(object):
         Args:
             record (ResourceRecord): the record added to the cache
         """
-        pass
+        if self.lookup(record.name, record.type_, record.class_) == []:
+            self.records.append(record)
+            return
+        for old_record in self.records:
+            if old_record.name == record.name and old_record.type_ == record.type_ and old_record.class_ == record.class_:
+                old_record = record
+                return
     
     def read_cache_file(self):
         """ Read the cache file from disk """
@@ -87,5 +93,3 @@ class RecordCache(object):
     def write_cache_file(self):
         """ Write the cache file to disk """
         pass
-
-
