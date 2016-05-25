@@ -41,16 +41,17 @@ class Server(object):
         self.caching = caching
         self.ttl = ttl
         self.port = port
+        self.done = False
         self.socket = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind (('',self.port))
 
     def serve(self):
         """ Start serving request """
         while not self.done:
-            request, addr = sock.recvfrom(1024)
+            request, addr = self.socket.recvfrom(1024)
             handler = RequestHandler (self.socket, request, addr)
 
     def shutdown(self):
         """ Shutdown the server """
         self.done = True
-        self.socket.close ()
+        self.socket.close()
