@@ -12,22 +12,24 @@ import struct
 
 
 class Composer(object):
+    """ Converts a string representation of a domain name to bytes """
+
     def __init__(self):
         self.offsets = dict()
-    
+
     def to_bytes(self, offset, dnames):
         # Convert each domain name in to bytes
         result = b""
-        for i, dname in enumerate(dnames):
+        for dname in dnames:
             # Split domain name into labels
             labels = dname.split(".")
-            
+
             # Determine keys of subdomains in offset dict
             keys = []
             for label in reversed(labels):
                 name = label
                 if keys:
-                     name += "." + keys[-1]
+                    name += "." + keys[-1]
                 keys.append(name)
             keys.reverse()
 
@@ -44,8 +46,8 @@ class Composer(object):
                 else:
                     self.offsets[keys[j]] = offset
                     result += struct.pack("!B{}s".format(len(label)),
-                              len(label),
-                              label)
+                                          len(label),
+                                          label)
                     offset += 1 + len(label)
 
             # Add null character at end
@@ -57,15 +59,27 @@ class Composer(object):
 
 
 class Parser(object):
+    """ Convert byte representations of domain names to strings """
+
     def __init__(self):
         self.labels = dict()
 
     def from_bytes(self, packet, offset, num):
-        begin_offset = offset
+        """ Convert domain name from bytes to string
+
+        Args:
+            packet (bytes): packet containing the domain name
+            offset (int): offset of domain name in packet
+            num (int): number of domain names to decode
+
+        Returns:
+            str, int
+        """
+
         dnames = []
 
         # Read the domain names
-        for i in range(num):
+        for _ in range(num):
             # Read a new domain name
             dname = ""
             prev_offsets = []
@@ -78,7 +92,7 @@ class Parser(object):
                 if llength == 0:
                     offset += 1
                     break
-                
+
                 # Compression label
                 elif (llength >> 6) == 3:
                     new_offset = offset + 2
@@ -91,7 +105,7 @@ class Parser(object):
                 else:
                     new_offset = offset + llength + 1
                     label = struct.unpack_from("{}s".format(llength),
-                            packet, offset+1)[0]
+                                               packet, offset+1)[0]
 
                 # Add label to dictionary
                 self.labels[offset] = label
@@ -109,5 +123,5 @@ class Parser(object):
 
             # Append domain name to list
             dnames.append(dname)
-        
+
         return dnames, offset

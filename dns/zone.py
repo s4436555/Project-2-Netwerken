@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-""" Zones of domain name space 
+""" Zones of domain name space
 
 See section 6.1.2 of RFC 1035 and section 4.2 of RFC 1034.
 Instead of tree structures we simply use dictionaries from domain names to
@@ -19,7 +19,7 @@ class Catalog(object):
 
     def add_zone(self, name, zone):
         """ Add a new zone to the catalog
-        
+
         Args:
             name (str): root domain name
             zone (Zone): zone

@@ -15,12 +15,12 @@ class RequestHandler(Thread):
 
     def __init__(self, socket, request, addr):
         """ Initialize the handler thread """
-        super().__init__()
+        super(RequestHandler, self).__init__()
         self.socket = socket
         self.request = request
         self.addr = addr
         self.daemon = True
-        
+
     def run(self):
         """ Run the handler thread """
         # TODO: Handle DNS request
@@ -32,7 +32,7 @@ class Server(object):
 
     def __init__(self, port, caching, ttl):
         """ Initialize the server
-        
+
         Args:
             port (int): port that server is listening on
             caching (bool): server uses resolver with caching if true

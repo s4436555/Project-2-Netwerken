@@ -9,7 +9,7 @@ RFC 1035 for more information.
 
 class Type(object):
     """ DNS TYPE and QTYPE
-    
+
     Usage:
         >>> Type.A
         1
@@ -48,8 +48,20 @@ class Type(object):
 
     @staticmethod
     def to_string(type_):
+        """ Convert a Type to a string
+
+        Usage:
+            >>> Type.to_string(Type.A)
+            'A'
+        """
         return Type.by_value[type_]
 
     @staticmethod
     def from_string(string):
+        """ Convert a string to a Type
+
+        Usage:
+            >>> Type.from_string('CNAME')
+            5
+        """
         return Type.by_string[string]

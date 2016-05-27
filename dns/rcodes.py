@@ -8,7 +8,7 @@ more info.
 
 class RCode(object):
     """ Enum of RCODE values
-    
+
     Usage:
         >>> NoError
         0
@@ -62,8 +62,20 @@ class RCode(object):
 
     @staticmethod
     def to_string(rcode):
+        """ Convert an RCode to a string
+
+        Usage:
+            >>> RCode.to_string(RCode.NoError)
+            'NoError'
+        """
         return RCode.by_value[rcode]
 
     @staticmethod
     def from_string(string):
+        """ Convert a string to an RCode
+
+        Usage:
+            >>> RCode.from_string('NoError')
+            0
+        """
         return RCode.by_string[string]

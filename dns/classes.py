@@ -10,7 +10,7 @@ a method for converting values to strings. See sections 3.2.4 and 3.2.5 of RFC
 
 class Class(object):
     """ Enum of CLASS and QCLASS values
-    
+
     Usage:
         >>> Class.IN
         1
@@ -36,8 +36,20 @@ class Class(object):
 
     @staticmethod
     def to_string(class_):
+        """ Convert a Class to a string
+
+        Usage:
+            >>> Class.to_string(Class.IN)
+            'IN'
+        """
         return Class.by_value[class_]
 
     @staticmethod
     def from_string(string):
+        """ Convert a string to a Class
+
+        Usage:
+            >>> Class.from_string('IN')
+            1
+        """
         return Class.by_string[string]

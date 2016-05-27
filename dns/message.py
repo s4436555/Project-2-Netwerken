@@ -6,21 +6,18 @@ This module contains classes for DNS messages, their header section and
 question fields. See section 4 of RFC 1035 for more info.
 """
 
-import socket
 import struct
 
-from dns.classes import Class
 from dns.domainname import Parser, Composer
 from dns.resource import ResourceRecord
-from dns.types import Type
 
 
 class Message(object):
     """ DNS message """
 
-    def __init__(self, header, questions=[], answers=[], authorities=[], additionals=[]):
+    def __init__(self, header, questions=None, answers=None, authorities=None, additionals=None):
         """ Create a new DNS message
-        
+
         Args:
             header (Header): the header section
             questions ([Question]): the question section
@@ -28,6 +25,15 @@ class Message(object):
             authorities ([ResourceRecord]): the authority section
             additionals ([ResourceRecord]): the additional section
         """
+        if questions is None:
+            questions = []
+        if answers is None:
+            answers = []
+        if authorities is None:
+            authorities = []
+        if additionals is None:
+            additionals = []
+
         self.header = header
         self.questions = questions
         self.answers = answers
@@ -82,25 +88,25 @@ class Message(object):
 
         # Parse questions
         questions = []
-        for i in range(header.qd_count):
+        for _ in range(header.qd_count):
             question, offset = Question.from_bytes(packet, offset, parser)
             questions.append(question)
 
         # Parse answers
         answers = []
-        for i in range(header.an_count):
+        for _ in range(header.an_count):
             answer, offset = ResourceRecord.from_bytes(packet, offset, parser)
             answers.append(answer)
 
         # Parse authorities
         authorities = []
-        for i in range(header.ns_count):
+        for _ in range(header.ns_count):
             authority, offset = ResourceRecord.from_bytes(packet, offset, parser)
             authorities.append(authority)
 
         # Parse additionals
         additionals = []
-        for i in range(header.ar_count):
+        for _ in range(header.ar_count):
             additional, offset = ResourceRecord.from_bytes(packet, offset, parser)
             additionals.append(additional)
 
@@ -109,13 +115,13 @@ class Message(object):
 
 class Header(object):
     """ The header section of a DNS message
-    
+
     Contains a number of properties which are accessible as normal member
     variables.
 
     See section 4.1.1 of RFC 1035 for their meaning.
     """
-    
+
     def __init__(self, ident, flags, qd_count, an_count, ns_count, ar_count):
         """ Create a new Header object
 
@@ -135,21 +141,21 @@ class Header(object):
 
     def to_bytes(self):
         """ Convert header to bytes """
-        return struct.pack("!6H", 
-                self.ident,
-                self._flags, 
-                self.qd_count, 
-                self.an_count, 
-                self.ns_count, 
-                self.ar_count)
+        return struct.pack("!6H",
+                           self.ident,
+                           self._flags,
+                           self.qd_count,
+                           self.an_count,
+                           self.ns_count,
+                           self.ar_count)
 
     @classmethod
     def from_bytes(cls, packet):
         """ Convert Header from bytes """
         if len(packet) < 12:
-            raise ShortHeader
+            raise ValueError("header is too short")
         return cls(*struct.unpack_from("!6H", packet))
-   
+
     @property
     def flags(self):
         return self._flags
@@ -221,7 +227,7 @@ class Header(object):
 
     @property
     def z(self):
-        return (self._flags & (((1 << 3) - 1) << 4) >> 4)
+        return self._flags & (((1 << 3) - 1) << 4) >> 4
     @z.setter
     def z(self, value):
         if value:
@@ -245,8 +251,8 @@ class Question(object):
     """
 
     def __init__(self, qname, qtype, qclass):
-        """ Create a new entry in the question section 
-        
+        """ Create a new entry in the question section
+
         Args:
             qname (str): QNAME
             qtype (Type): QTYPE
