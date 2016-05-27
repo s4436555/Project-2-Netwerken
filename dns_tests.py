@@ -11,25 +11,25 @@ portnr = 5353
 server = "localhost"
 
 class TestResolver(unittest.TestCase):
-    """Test cases for GET requests"""
+    """ Test cases for GET requests """
 
     def setUp(self):
-        """Prepare for testing"""
+        """ Prepare for testing """
 
 
     def tearDown(self):
-        """Clean up after testing"""
+        """ Clean up after testing """
 
 
-    def test_not_empty_valid(self):
-        """..."""
+    def test_valid_fqdn(self):
+        """ ... """
         hostname = "www.google.nl."
         resolver = dns.resolver.Resolver(False, 64)
         found_host = resolver.gethostbyname(hostname)
         self.assertNotEqual([], found_host[2])
 
-    def test_empty_valid(self):
-        """..."""
+    def test_invalid_fqdn(self):
+        """ Checks if the output is empty if the FQDN does not exist """
         hostname = "www.google.nl.maffia."
         resolver = dns.resolver.Resolver(False, 64)
         found_host = resolver.gethostbyname(hostname)
@@ -37,11 +37,63 @@ class TestResolver(unittest.TestCase):
 
 
 class TestResolverCache(unittest.TestCase):
-    pass
+    
+    def setUp(self):
+        """ Prepare for testing """
 
+
+    def tearDown(self):
+        """ Clean up after testing """
+        
+        
+    def check_add_to_cache(self):
+        """ Checks if the answers are added to the cache """
+        pass
+        
+    def check_existing_cache(self):
+        """ Checks if the cache is used when answering queries """
+        pass
+        
+    def check_cache_expiration(self):
+        """ Checks if old entries are no longer used after expiring """
+        pass
 
 class TestServer(unittest.TestCase):
-    pass
+    
+    def setUp(self):
+        """ Prepare for testing """
+        # TODO
+        pass
+
+
+    def tearDown(self):
+        """ Clean up after testing """
+        # TODO
+        pass
+    
+    def check_fqdn_direct_authority(self):
+        """ Checks if the server is able to solve a query for a FQDN for which 
+            the server has direct authority
+        """
+        pass
+    
+    def check_fqdn_in_zone(self):
+        """ Checks if the server is able to solve a query for a FQDN for which
+            the server has no direct authority, but knows a name server in it's 
+            zone which does 
+        """
+        pass
+        
+    def check_fqdn_outside_zone(self):
+        """ Checks if the server is able to solve a query for a FQDN that is 
+            outside of it's zone
+        """
+        pass
+        
+    def check_parallel_requests(self):
+        """ Checks if the server is able to correctly handle parallel requests 
+        """
+        pass
 
 
 if __name__ == "__main__":
