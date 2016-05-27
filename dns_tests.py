@@ -11,7 +11,6 @@ portnr = 5353
 server = "localhost"
 
 class TestResolver(unittest.TestCase):
-    """ Test cases for GET requests """
 
     def setUp(self):
         """ Prepare for testing """
