@@ -161,9 +161,6 @@ class Resolver(object):
         #3. Send them queries until one returns a response.
         while not resolved and resolving < parts_len:
             if resolving != parts_len - 1:
-                print ("resolving: " + parts[resolving])
-                if parts[resolving] == ".":
-                    print "yay"
                 nameservers = self._get_ns_ip(nameservers, sock, parts[resolving])
                 resolving += 1
             else:
