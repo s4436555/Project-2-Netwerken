@@ -158,18 +158,24 @@ class Header(object):
 
     @property
     def flags(self):
+        """The flags of the header"""
         return self._flags
+
     @flags.setter
     def flags(self, value):
+        """Set the flags of the header"""
         if value >= (1 << 16):
             raise ValueError("value too big for flags")
         self._flags = value
 
     @property
     def qr(self):
+        """The QR flag"""
         return self._flags & (1 << 15)
+
     @qr.setter
     def qr(self, value):
+        """Set the QR flag"""
         if value:
             self._flags |= (1 << 15)
         else:
@@ -177,9 +183,12 @@ class Header(object):
 
     @property
     def opcode(self):
+        """The opcode of the header"""
         return (self._flags & (((1 << 4) - 1) << 11)) >> 11
+
     @opcode.setter
     def opcode(self, value):
+        """Set the opcode"""
         if value > 0b1111:
             raise ValueError("invalid opcode")
         self._flags &= ~(((1 << 4) - 1) << 11)
@@ -187,9 +196,12 @@ class Header(object):
 
     @property
     def aa(self):
+        """The AA flag"""
         return self._flags & (1 << 10)
+
     @aa.setter
     def aa(self, value):
+        """Set the AA flag"""
         if value:
             self._flags |= (1 << 10)
         else:
@@ -197,9 +209,12 @@ class Header(object):
 
     @property
     def tc(self):
+        """The TC flag"""
         return self._flags & (1 << 9)
+
     @tc.setter
     def tc(self, value):
+        """Set the TC flag"""
         if value:
             self._flags |= (1 << 9)
         else:
@@ -207,9 +222,12 @@ class Header(object):
 
     @property
     def rd(self):
+        """The RD flag"""
         return self._flags & (1 << 8)
+
     @rd.setter
     def rd(self, value):
+        """Set the RD flag"""
         if value:
             self._flags |= (1 << 8)
         else:
@@ -217,9 +235,12 @@ class Header(object):
 
     @property
     def ra(self):
+        """The RA flag"""
         return self._flags & (1 << 7)
+
     @ra.setter
     def ra(self, value):
+        """Set the RA flag"""
         if value:
             self._flags |= (1 << 7)
         else:
@@ -227,17 +248,23 @@ class Header(object):
 
     @property
     def z(self):
+        """The Z flag"""
         return self._flags & (((1 << 3) - 1) << 4) >> 4
+
     @z.setter
     def z(self, value):
+        """Set the Z flag"""
         if value:
             raise ValueError("non-zero zero flag")
 
     @property
     def rcode(self):
+        """The return code"""
         return self._flags & ((1 << 4) - 1)
+
     @rcode.setter
     def rcode(self, value):
+        """Set the return code"""
         if value > 0b1111:
             raise ValueError("invalid return code")
         self._flags &= ~((1 << 4) - 1)
