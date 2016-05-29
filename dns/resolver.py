@@ -19,6 +19,22 @@ import dns.rcodes
 class Resolver(object):
     """ DNS resolver """
     
+    root_servers = {
+        "198.41.0.4",       #A.ROOT-SERVERS.NET.
+        "192.228.79.201",   #B.ROOT-SERVERS.NET.
+        "192.33.4.12",      #C.ROOT-SERVERS.NET.
+        "199.7.91.13",      #D.ROOT-SERVERS.NET.
+        "192.203.230.10",   #E.ROOT-SERVERS.NET.
+        "192.5.5.241",      #F.ROOT-SERVERS.NET.
+        "192.112.36.4",     #G.ROOT-SERVERS.NET.
+        "198.97.190.53",    #H.ROOT-SERVERS.NET.
+        "192.36.148.17",    #I.ROOT-SERVERS.NET.
+        "192.58.128.30",    #J.ROOT-SERVERS.NET.
+        "193.0.14.129",     #K.ROOT-SERVERS.NET.
+        "199.7.83.42",      #L.ROOT-SERVERS.NET.
+        "202.12.27.33"      #M.ROOT-SERVERS.NET.
+    }
+    
     def __init__(self, caching, ttl):
         """ Initialize the resolver
         
@@ -95,25 +111,23 @@ class Resolver(object):
             (str, [str], [str]): (hostname, aliaslist, ipaddrlist)
         """
         
-        
         timeout = 2 # the time waited for a response
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(timeout)
 
-#        nameservers = {"8.8.8.8"}
-        nameservers = {"localhost"}
+        nameservers = self.root_servers
         resolved = False
 
         parts = []
         prev = ""
 
         for part in reversed(hostname.split(".")):
-            if prev != ".":
-                prev = part + "." + prev
+            if prev == "":
+                prev = part
             else:
-                prev = part + prev
-            parts.append(prev)
-            print (prev)
+                prev = part + "." + prev
+            if prev != "": #framework can't handle "" or anything ending with a dot
+                parts.append(prev)
         
         parts_len = len(parts)
         resolving = 0
@@ -142,13 +156,14 @@ class Resolver(object):
                 if resolving < 0:
                     resolving = 0
 
-        
-
         #2. Find the best servers to ask.
 
         #3. Send them queries until one returns a response.
         while not resolved and resolving < parts_len:
             if resolving != parts_len - 1:
+                print ("resolving: " + parts[resolving])
+                if parts[resolving] == ".":
+                    print "yay"
                 nameservers = self._get_ns_ip(nameservers, sock, parts[resolving])
                 resolving += 1
             else:
