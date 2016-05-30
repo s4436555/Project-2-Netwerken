@@ -52,6 +52,8 @@ class Resolver(object):
     def _get_response(self, sock, nameservers, query):
         for ns in nameservers:
             try:
+                print "ns"
+                print ns
                 sock.sendto(query.to_bytes(), (ns, 53))
                 # Receive response
                 data = sock.recv(512)
@@ -92,7 +94,75 @@ class Resolver(object):
         
         return nameservers
     
-    def get_ip(self, sock, nameservers, hostname):
+    def get_ns(self, sock, nameservers, authorities):
+        NS_answers = [ans for ans in authorities if ans.type_ == Type.NS]
+        for answer in NS_answers:
+            print "aaa"
+            print answer.rdata.data
+            response = self._get_single_A(sock, nameservers, answer.rdata.data)
+            A_answers =  [ans for ans in response.answers + response.additionals if ans.type_ == Type.A]
+            
+            for answer2 in A_answers:
+                if answer2.name == answer.name:
+                    yield answer.rdata.data
+    
+    def extract_ip(self, authorities, additionals, hostname):
+        addresses = []
+        remaining = []
+        for ns in [ans for ans in authorities if ans.type_ == Type.NS]:
+            #TODO check if this ns could be useful
+            ns_name = ns.rdata.data
+            found = False
+            for answer in [ans for ans in additionals if ans.type_ == Type.A]:
+                if answer.name == ns_name:
+                    addresses.append(answer.rdata.data)
+            if not found:
+                remaining.append(ns)
+        return addresses, remaining
+    
+#    def get_next_server(self, sock, nameservers, response ):
+    
+#    def get_ip(self, sock, nameservers, hostname):
+#        hostname = hostname.rstrip(".") #framework can't handle "" or anything ending with a dot
+
+#        aliases = []
+#        addresses = []
+
+#        #1. See if the answer is in local information, and if so return it to the client.
+#        if self.caching:
+#            for alias in self.cache.lookup(hostname, Type.CNAME, Class.IN):
+#                aliases.append(alias.rdata.data)
+#            for address in self.cache.lookup(hostname, Type.A, Class.IN):
+#                addresses.append(address.rdata.data)
+#            
+#            if aliases != []:
+#                return hostname, aliases, addresses
+
+#        #3. Send them queries until one returns a response.
+#        # Create and send query
+#        
+#        while True:
+##            print nameservers
+#            response = self._get_single_A(sock, nameservers, hostname)
+#            
+#            if response == None:
+#                break
+#            
+#            A_answers =  [ans for ans in response.answers + response.additionals if ans.type_ == Type.A]
+#            
+#            for answer in A_answers:
+#                if answer.name == hostname:
+#                    addresses.append(answer.rdata.data)
+#            if addresses != []:
+#                break
+#            
+#            ns2 = nameservers
+#            nameservers, remaining = self.extract_ip(response.authorities, response.additionals, hostname)
+#            if nameservers == []:
+#                nameservers = self.get_ns(sock, ns2, remaining)
+#        return addresses
+        
+    def get_hostname_helper(self, sock, nameservers, hostname):
         hostname = hostname.rstrip(".") #framework can't handle "" or anything ending with a dot
 
         aliases = []
@@ -112,35 +182,24 @@ class Resolver(object):
         # Create and send query
         
         while True:
-            print nameservers
             response = self._get_single_A(sock, nameservers, hostname)
             
             if response == None:
                 break
             
-            A_answers =  [ans for ans in response.answers + response.additionals if ans.type_ == Type.A]
-            
-            for answer in A_answers:
-                if answer.name == hostname:
-                    print answer.rdata.data
-                    addresses.append(answer.rdata.data)
+            for answer in [ans for ans in response.answers + response.additionals if ans.type_ == Type.A and ans.name == hostname]:
+                addresses.append(answer.rdata.data)
+            for additional in [ans for ans in response.additionals if ans.type_ == Type.CNAME and ans.name == hostname]:
+                aliases.append(additional.rdata.data)
             if addresses != []:
                 break
             
-            NS_answers = [ans for ans in response.authorities if ans.type_ == Type.NS]
-            if NS_answers != []:
-                old_nameservers = nameservers
-                nameservers = []
-                for answer in NS_answers:
-                    print answer.rdata.data
-                    nameservers += self.get_ip(sock, old_nameservers, answer.rdata.data)
-                print nameservers
-#                break
-            else:
-                print "empty"
-                break
-        return addresses
-        
+            ns2 = nameservers
+            nameservers, remaining = self.extract_ip(response.authorities, response.additionals, hostname)
+            if nameservers == []:
+                nameservers = self.get_ns(sock, ns2, remaining)
+        return hostname, aliases, addresses
+    
     
     def gethostbyname(self, hostname):
         """ Translate a host name to IPv4 address.
@@ -183,8 +242,6 @@ class Resolver(object):
 
         #3. Send them queries until one returns a response.
         # Create and send query
-        
-        addresses = self.get_ip(sock, nameservers, hostname)
 
        #4. Analyze the response, either:
 
@@ -204,5 +261,5 @@ class Resolver(object):
         #        bizarre contents, delete the server from the SLIST and
         #        go back to step 3.
     
-        return hostname, aliases, addresses
+        return self.get_hostname_helper(sock, nameservers, hostname)
         
