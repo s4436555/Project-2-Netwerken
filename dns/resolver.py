@@ -19,9 +19,9 @@ import dns.rcodes
 class Resolver(object):
     """ DNS resolver """
     
-    root_servers2 = {
-        "localhost"
-    }
+#    root_servers = {
+#        "localhost"
+#    }
     
     root_servers = {
         "198.41.0.4",       #A.ROOT-SERVERS.NET.
@@ -77,16 +77,15 @@ class Resolver(object):
         nameservers = []
         
         while nameservers == []:
-            addresses = self.cache.lookup(hostname, Type.NS, Class.IN)
-            if addresses != []:
-                for address in p_addresses:
-                    nameservers.append(address.rdata.data)
-             
             split = hostname.split(".", 1)
             if (len(split) > 1):
                 hostname = split[1]
             else:
-                nameservers = self.root_servers
+                return self.root_servers
+            addresses = self.cache.lookup(hostname, Type.NS, Class.IN)
+            if addresses != []:
+                for address in p_addresses:
+                    nameservers.append(address.rdata.data)
         
         return nameservers
     
@@ -94,13 +93,15 @@ class Resolver(object):
         NS_answers = [ans for ans in authorities if ans.type_ == Type.NS]
         for answer in NS_answers:
             response = self._get_single_A(sock, nameservers, answer.rdata.data)
-            A_answers =  [ans for ans in response.answers + response.additionals if ans.type_ == Type.A]
             
-            for answer2 in A_answers:
+            for answer2 in [ans for ans in response.answers + response.additionals if ans.type_ == Type.A]:
                 if answer2.name == answer.name:
                     yield answer.rdata.data
     
     def extract_ip(self, authorities, additionals, hostname):
+        """ Mandatory function to get NS ip addresses from the additionals when
+            asking the root server for information.
+        """
         addresses = []
         remaining = []
         for ns in [ans for ans in authorities if ans.type_ == Type.NS]:
@@ -115,6 +116,9 @@ class Resolver(object):
         return addresses, remaining
         
     def get_hostname_helper(self, sock, nameservers, hostname):
+        """ Will break down as soon as something like xxx.nl. -> yyy.com. 
+            happens.
+        """
         hostname = hostname.rstrip(".") #framework can't handle "" or anything ending with a dot
 
         aliases = []

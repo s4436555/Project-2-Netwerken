@@ -22,10 +22,11 @@ class TestResolver(unittest.TestCase):
 
     def test_valid_fqdn(self):
         """ ... """
-        hostname = "www.google.nl."
+        hostname = "gaia.cs.umass.edu"
         resolver = dns.resolver.Resolver(False, 64)
         found_host = resolver.gethostbyname(hostname)
-        self.assertNotEqual([], found_host[2])
+#        print found_host
+        self.assertEqual(["128.119.245.12"], found_host[2])
 
     def test_invalid_fqdn(self):
         """ Checks if the output is empty if the FQDN does not exist """
